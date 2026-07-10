@@ -1,72 +1,54 @@
-# Tasks & Sprints
+# Tasks — com-pare
 
-## Sprint 1 — Database, Seed Data & Core Dashboard _(no login required)_
-**Goal:** App renders real-looking data for an anonymous visitor. Every form saves to the DB.
-
-- [ ] Run migration SQL (all tables + seed rows)
-- [ ] Homepage dashboard: fetch and display permit, OWWA, PhilHealth, finance rows
-- [ ] Urgency badge component (red / yellow / green) driven by date arithmetic
-- [ ] Permit record form: create & edit, persists to `permit_records`
-- [ ] OWWA record form: create & edit, persists to `owwa_records`
-- [ ] PhilHealth record form: create & edit, persists to `philhealth_records`
-- [ ] Finance entry form: income/expense, persists to `finance_entries`; running balance shown
-- [ ] Empty state UI copy for each section
-- [ ] Loading skeleton and error boundary on all data fetches
-- [ ] Delete button on each record (with confirmation modal) → hard delete + audit log entry
-
-**DoD:** Dashboard loads with seed data in under 2 s; every form save is reflected immediately; empty states show correct copy; no dead buttons.
+## Sprint 1 — Database & Demo Listings (demoable without login)
+**Goal:** App loads with real provider data; comparison tool works end-to-end against DB.
+- [ ] Run migration SQL (all tables, RLS v1 policies, seed data)
+- [ ] Build homepage `/` showing seeded `service_providers` list (loading / empty / error / ready states)
+- [ ] Build comparison form (amount + destination) → ranked results from DB
+- [ ] Store each comparison run in `comparisons` table
+- [ ] Confirm: anonymous visitor can run a comparison; result persists in DB
+**Definition of Done:** A person with no account opens the app, runs a comparison, and the row appears in Supabase `comparisons` table. No login prompt.
 
 ---
 
-## Sprint 2 — Auth, Per-User Data & Stripe Checkout ✅ _v1 functional milestone_
-**Goal:** A real worker can sign up, own her data, and pay.
-
-- [ ] Supabase Auth: sign-up and login pages (`/signup`, `/login`)
-- [ ] On sign-up: insert `workers` row with `user_id = auth.uid()`
-- [ ] Replace v1 RLS policies with owner-scoped policies (`auth.uid() = user_id`)
-- [ ] Stripe products: Monthly SGD 4.90 and Annual SGD 39
-- [ ] `/api/checkout` route: creates Stripe Checkout session, returns URL
-- [ ] `/api/webhooks/stripe` route: handles `checkout.session.completed` → upsert `subscriptions`
-- [ ] Free tier gate: history capped at last 3 finance entries; upgrade prompt shown
-- [ ] Subscription badge in nav bar (Free / Pro)
-- [ ] Post-checkout redirect to dashboard with success toast
-- [ ] Audit log entry on subscription activation
-
-**DoD:** Sign-up → enter permit date → checkout → data correct on refresh; Stripe test payment captured; RLS blocks cross-user reads.
+## Sprint 2 — Referral Engine ✅ v1 functional milestone
+**Goal:** Referral loop works end-to-end.
+- [ ] User signup page → creates `users` row + generates `referral_code`
+- [ ] `/ref/[code]` landing page stores code in cookie
+- [ ] On signup via referral link → writes `referrals` row linking referrer + referee
+- [ ] Dashboard (no-auth) shows total referral counts per user
+- [ ] Confirm: full referral chain tracked in DB
+**Definition of Done:** User A signs up → shares link → User B opens link and signs up → `referrals` row exists with both IDs and status `confirmed`. Visible in dashboard.
 
 ---
 
-## Sprint 3 — Expiry Alerts & Document Uploads
-**Goal:** Workers get warned before things expire.
-
-- [ ] Nightly cron (Vercel cron or pg_cron): query records expiring within 30 days
-- [ ] `send_expiry_alert` tool: sends email via Resend (permit / OWWA / PhilHealth)
-- [ ] In-app notification bell: badge count of upcoming expiries
-- [ ] Alert opt-in settings page (per alert type)
-- [ ] Document upload: Supabase Storage bucket, attach to permit / OWWA / PhilHealth record
-- [ ] Thumbnail preview on dashboard cards
-
-**DoD:** Test email received when permit expiry is set to 25 days from today; upload persists and thumbnail renders.
+## Sprint 3 — Partnership Lead + Stripe Checkout
+**Goal:** Provider can submit a lead and pay.
+- [ ] Partnership enquiry form → writes `partnership_leads` row
+- [ ] Admin lead list page (server-rendered, service-role protected)
+- [ ] `/api/checkout` route creates Stripe session (server-side only)
+- [ ] Stripe webhook writes `checkout_sessions` row on payment success
+- [ ] Provider redirected to success/failure page
+- [ ] `is_partner` flipped to `true` on confirmed payment
+**Definition of Done:** A provider submits a lead, clicks Pay, completes Stripe test checkout, and `checkout_sessions.status = 'paid'` + `service_providers.is_partner = true` are confirmed in Supabase.
 
 ---
 
-## Sprint 4 — Finance Charts & Admin Usage View
-**Goal:** Builder can see who is using the app and finance is more useful.
-
-- [ ] Monthly income vs expense bar chart (Recharts)
-- [ ] Expense category pie chart
-- [ ] Admin route `/admin` (role-gated): total users, paying users, MRR
-- [ ] Audit log viewer: last 50 entries, filterable by action
-- [ ] Export finance entries as CSV
-
-**DoD:** Admin page shows correct counts; chart renders from real DB data; CSV download works.
+## Sprint 4 — Lock It Down (auth + owner-scoped data)
+**Goal:** Real users see only their own data; demo seed remains accessible.
+- [ ] Enable Supabase Auth (email + password)
+- [ ] Replace v1 RLS policies with `auth.uid() = user_id` owner policies
+- [ ] Protect admin routes with service-role server check
+- [ ] Link existing `comparisons` and `referrals` to `auth.users` on login
+- [ ] Confirm: logged-in user cannot read another user's comparisons
+**Definition of Done:** Two test accounts cannot see each other's comparisons or referrals. Admin route returns 403 for non-admin sessions.
 
 ---
 
-## Gantt (Sprint → Weeks)
+## Gantt (which sprint each task lands)
 ```
-Week 1:  Sprint 1 — DB + dashboard + all entry forms
-Week 2:  Sprint 2 — Auth + RLS lockdown + Stripe checkout   ← v1 live
-Week 3:  Sprint 3 — Email alerts + document uploads
-Week 4:  Sprint 4 — Charts + admin panel
+Sprint 1 [Week 1 D1-D2]: DB schema, seed, comparison tool
+Sprint 2 [Week 1 D3-D4]: Signup, referral link, referral tracking  ← v1 functional
+Sprint 3 [Week 1 D5-D7]: Lead form, Stripe checkout, admin lead view
+Sprint 4 [Week 2]:        Auth, RLS lockdown, owner policies
 ```

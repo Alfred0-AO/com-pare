@@ -1,34 +1,35 @@
-# Agentic Layer
+# Agentic Layer — com-pare
 
 ## Risk Levels & Actions
 
 ### Low — Auto (no approval needed)
-- Tag a finance entry with a category based on description keywords
-- Compute and display urgency badge from stored dates
-- Draft renewal reminder copy (shown to user before sending)
+- Tag a new `partnership_lead` as `new` on insert
+- Score and rank providers on each comparison run
+- Generate `referral_code` on user signup
 
-### Medium — Light Approval (user confirms)
-- Create a new permit, OWWA, or PhilHealth record from a parsed photo
-- Update status to 'expired' when expiry_date passes (nightly job, user notified)
+### Medium — Light Approval (admin confirms before executing)
+- Mark a `partnership_lead` status as `contacted` → sends follow-up email draft
+- Flag a provider listing as `is_partner = true` after payment confirmed
 
-### High — Always Approval (explicit user tap)
-- Send expiry alert email to user → user opts in per alert type
-- Initiate Stripe checkout session → user must click through payment UI
+### High — Always Approval (admin must explicitly approve)
+- Send outbound email to a provider contact
+- Trigger Stripe refund on a checkout session
 
 ### Critical — Human Only
-- Delete any record (worker, permit, finance)
-- Refund a subscription payment
-- Export all user data (PDPA request)
+- Delete a user or provider record
+- Issue a legal notice or data export
+- Manual override of any payment
 
-## Named Tools (approved, no raw exec)
-- `send_expiry_alert(worker_id, alert_type)` — Resend email, rate-limited
-- `create_stripe_checkout(worker_id, plan)` — returns URL, no charge until user completes
-- `update_subscription_status(worker_id, status)` — called by Stripe webhook only
-- `compute_urgency_badges(worker_id)` — pure read, returns badge data
+## Named Tools (approved list)
+- `rank_providers(amount, country)` — query + score providers
+- `generate_referral_code(user_id)` — deterministic short code
+- `create_stripe_session(lead_id, amount)` — server-side only
+- `update_lead_status(lead_id, status)` — medium, requires admin token
+- `send_partner_email_draft(lead_id)` — high, queues draft for approval
 
 ## Audit Log Fields
-Every meaningful action writes: `action`, `table_name`, `record_id`, `old_value`, `new_value`, `user_id`, `ip_address`, `created_at`
+`id, actor_user_id, action, target_table, target_id, old_value jsonb, new_value jsonb, risk_level, approved_by, created_at`
 
 ## v1 vs Later
-- **v1:** only `compute_urgency_badges` and `create_stripe_checkout` are live
-- **Later:** `send_expiry_alert` (Sprint 3), OCR parse tool (Later)
+- **v1:** Low-risk auto actions only (rank, code gen, lead tagging).
+- **Later:** Medium/high actions with approval queue UI; webhook-triggered agent on Stripe success.

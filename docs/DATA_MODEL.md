@@ -1,95 +1,71 @@
-# Data Model
+# Data Model — com-pare
 
-## workers
-| Field | Type | Notes |
+## users
+| field | type | notes |
+|---|---|---|
+| id | uuid PK | gen_random_uuid() |
+| user_id | uuid | nullable, Supabase auth link |
+| display_name | text | |
+| email | text | unique |
+| referral_code | text | unique, generated on signup |
+| referred_by_code | text | nullable |
+| created_at | timestamptz | default now() |
+
+## service_providers
+| field | type | notes |
 |---|---|---|
 | id | uuid PK | |
-| user_id | uuid nullable | set after auth, used for RLS lockdown |
-| full_name | text | |
-| fin_number | text | Singapore FIN |
-| nationality | text | default 'Filipino' |
-| employer_name | text | |
+| user_id | uuid | nullable |
+| name | text | e.g. "Western Union Orchard" |
+| category | text | remittance / telco / insurance |
+| fee_pct | numeric | |
+| speed_hours | numeric | typical transfer time |
+| rating | numeric | 1–5 |
+| website_url | text | |
+| is_partner | boolean | paid partner flag |
 | created_at | timestamptz | |
 
-## permit_records
-| Field | Type | Notes |
+## comparisons
+| field | type | notes |
 |---|---|---|
 | id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid FK → workers | |
-| permit_type | text | 'Work Permit' / 'S Pass' |
-| permit_number | text | |
-| issue_date | date | |
-| expiry_date | date | drives badge colour |
-| status | text | active / expired |
-
-## owwa_records
-| Field | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid FK → workers | |
-| membership_number | text | |
-| valid_from | date | |
-| valid_until | date | drives badge |
-| contribution_amount | numeric | USD amount paid |
-| status | text | |
-
-## philhealth_records
-| Field | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid FK → workers | |
-| philhealth_number | text | |
-| last_contribution_date | date | |
-| last_contribution_amount | numeric | PHP |
-| quarters_paid | integer | |
-| status | text | |
-
-## finance_entries
-| Field | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid FK → workers | |
-| entry_type | text | 'income' or 'expense' |
-| category | text | salary / remittance / food / transport / other |
+| user_id | uuid | nullable |
 | amount_sgd | numeric | |
-| description | text | |
-| entry_date | date | |
+| destination_country | text | |
+| results_snapshot | jsonb | ranked providers at time of search |
+| created_at | timestamptz | |
 
-## subscriptions
-| Field | Type | Notes |
+## referrals
+| field | type | notes |
 |---|---|---|
 | id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid FK → workers | |
-| stripe_customer_id | text | |
-| stripe_subscription_id | text | |
-| plan | text | free / monthly / annual |
-| status | text | active / cancelled / past_due |
-| current_period_end | timestamptz | |
+| user_id | uuid | nullable (referrer's users.id) |
+| referee_user_id | uuid | nullable (new user's users.id) |
+| referral_code | text | |
+| status | text | pending / confirmed |
+| created_at | timestamptz | |
 
-## audit_logs
-| Field | Type | Notes |
+## partnership_leads
+| field | type | notes |
 |---|---|---|
 | id | uuid PK | |
-| user_id | uuid nullable | |
-| worker_id | uuid nullable | |
-| action | text | e.g. 'permit_updated', 'subscription_activated' |
-| table_name | text | |
-| record_id | uuid | |
-| old_value | jsonb | |
-| new_value | jsonb | |
-| ip_address | text | |
+| user_id | uuid | nullable |
+| provider_name | text | |
+| contact_email | text | |
+| message | text | |
+| status | text | new / contacted / converted |
+| created_at | timestamptz | |
 
-### AI Fields (future)
-Any AI-generated field (e.g. `predicted_renewal_date`) stores:
-- `value` — the prediction
-- `source` — model name / rule name
-- `confidence` — 0.0–1.0
-- `review_status` — 'unreviewed' / 'accepted' / 'rejected'
+## checkout_sessions
+| field | type | notes |
+|---|---|---|
+| id | uuid PK | |
+| user_id | uuid | nullable |
+| partnership_lead_id | uuid | FK to partnership_leads |
+| stripe_session_id | text | |
+| amount_sgd | numeric | |
+| status | text | pending / paid / failed |
+| created_at | timestamptz | |
 
-### RLS
-v1: permissive read+write for demo. Lock-down sprint replaces with `auth.uid() = user_id`.
+## RLS
+All tables: `enable row level security`. v1 permissive read+write policies for demo. Lock-down sprint replaces with `auth.uid() = user_id` owner policies.

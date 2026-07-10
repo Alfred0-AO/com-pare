@@ -1,34 +1,34 @@
-# Com-pare — Product Requirements Document
+# PRD — com-pare
 
 ## Problem
-Filipino domestic workers and FDWs in Singapore juggle multiple government memberships and deadlines across different platforms: MOM work permit expiry, OWWA membership renewal, PhilHealth contributions, and personal finances. Missing any one of these has real legal and financial consequences. There is no single place to track all of them.
+Filipino workers in Singapore lack a single place to compare remittance centres and service providers. Service providers (remittance shops, telcos, etc.) have no cost-effective way to reach this community. There is no referral or monetisation bridge between the two.
 
 ## Target User
-Filipino workers (FDW / OFW) currently employed in Singapore, aged 25–45, primarily phone users, sending remittances home monthly.
+- **Primary:** Filipino workers in Singapore (OFW / Phil Workers) seeking best remittance rates and services
+- **Secondary:** Remittance centres and service providers willing to pay for qualified leads
 
 ## Core Objects
-- **Worker profile** — the user's personal record
-- **Permit record** — MOM work permit number, issue/expiry dates
-- **OWWA record** — membership number, validity window
-- **PhilHealth record** — PHN, last contribution date, quarters paid
-- **Finance entry** — income or expense log (SGD)
-- **Subscription** — free or paid plan, Stripe link
+- **User** — worker who signs up and compares services
+- **ServiceProvider** — remittance centre or sponsor listing
+- **Comparison** — a user's rate/service lookup session
+- **Referral** — a user inviting another user (with tracking code)
+- **PartnershipLead** — a service provider expressing interest in a paid partnership
+- **CheckoutSession** — payment record for a provider's partnership fee
 
-## MVP Must-Haves
-- [ ] Dashboard: permit, OWWA, PhilHealth, and wallet summary — colour-coded by expiry urgency
-- [ ] Manual entry forms for all four tracked items
-- [ ] Finance log: add income or expense, see running balance
-- [ ] User sign-up / login
-- [ ] Stripe checkout for monthly (SGD 4.90) or annual (SGD 39) plan
-- [ ] Paid tier gates: history log beyond last 3 entries + email alerts
-- [ ] App is viewable with demo data before login
+## MVP Checklist (v1 must-haves)
+- [ ] Landing page shows live service provider listings (no login required)
+- [ ] User can run a remittance comparison (currency, amount, provider)
+- [ ] User can sign up and get a unique referral link
+- [ ] Referred friend signup is tracked to referrer
+- [ ] Service provider can submit a partnership enquiry
+- [ ] Admin can view referral counts and provider leads
+- [ ] Stripe checkout flow for provider partnership fee
 
 ## Non-Goals (v1)
-- OCR / photo parsing of permit cards
-- SSS tracking
-- Agency / multi-worker admin panel
+- Real-time exchange rate API integration
+- In-app messaging between users and providers
 - Mobile native app
-- Automated renewal submissions
+- Multi-currency wallet
 
 ## Success Criteria
-A worker signs up, enters her MOM permit expiry date and latest PhilHealth contribution, completes Stripe checkout for the monthly plan, and sees her dashboard with a green/yellow/red status badge — all data persisted and correct on page refresh.
+A Filipino worker lands on the homepage, runs a remittance comparison, signs up, copies their referral link, shares it, a friend signs up via that link — both appear in the admin dashboard. A remittance centre submits a partnership lead and completes a Stripe payment. All steps persist to the database and are visible in the UI without a page reload.
