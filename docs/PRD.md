@@ -1,34 +1,32 @@
 # PRD — com-pare
 
 ## Problem
-Filipino workers in Singapore lack a single place to compare remittance centres and service providers. Service providers (remittance shops, telcos, etc.) have no cost-effective way to reach this community. There is no referral or monetisation bridge between the two.
+Filipino workers in Singapore struggle to find and compare remittance centres and other services (insurance, loans, SIM cards). Service providers have no cheap, targeted channel to reach this audience.
 
 ## Target User
-- **Primary:** Filipino workers in Singapore (OFW / Phil Workers) seeking best remittance rates and services
-- **Secondary:** Remittance centres and service providers willing to pay for qualified leads
+- **Primary:** Filipino OFW (overseas Filipino worker) in Singapore — needs to compare remittance rates, fees, and promos.
+- **Secondary:** Service providers (remittance centres, insurers, telecoms) willing to pay for qualified leads.
 
 ## Core Objects
-- **User** — worker who signs up and compares services
-- **ServiceProvider** — remittance centre or sponsor listing
-- **Comparison** — a user's rate/service lookup session
-- **Referral** — a user inviting another user (with tracking code)
-- **PartnershipLead** — a service provider expressing interest in a paid partnership
-- **CheckoutSession** — payment record for a provider's partnership fee
+- **User** — profile, referral code, referral count
+- **Provider** — business name, category, contact, partnership tier, payout rate
+- **Listing** — provider's published rate/offer shown to users
+- **Comparison** — user's saved side-by-side of ≥2 listings
+- **Referral** — who invited whom, status (pending/converted)
+- **Lead** — user click-through or inquiry sent to a provider, billable event
+- **Payment** — Stripe checkout session for provider partnership fee
 
-## MVP Checklist (v1 must-haves)
-- [ ] Landing page shows live service provider listings (no login required)
-- [ ] User can run a remittance comparison (currency, amount, provider)
-- [ ] User can sign up and get a unique referral link
-- [ ] Referred friend signup is tracked to referrer
-- [ ] Service provider can submit a partnership enquiry
-- [ ] Admin can view referral counts and provider leads
-- [ ] Stripe checkout flow for provider partnership fee
+## MVP Must-Haves
+- [ ] Homepage shows live listings (no login required)
+- [ ] User can compare ≥2 listings side-by-side
+- [ ] User registers, gets unique referral link
+- [ ] Referred friend signs up via link → referral recorded
+- [ ] User clicks "Contact Provider" → lead created, provider notified
+- [ ] Provider can pay partnership fee via Stripe checkout
+- [ ] Admin sees dashboard: user count, referral count, lead count, revenue
 
 ## Non-Goals (v1)
-- Real-time exchange rate API integration
-- In-app messaging between users and providers
-- Mobile native app
-- Multi-currency wallet
+- Mobile app, SMS notifications, loyalty points, multi-currency beyond SGD→PHP
 
 ## Success Criteria
-A Filipino worker lands on the homepage, runs a remittance comparison, signs up, copies their referral link, shares it, a friend signs up via that link — both appear in the admin dashboard. A remittance centre submits a partnership lead and completes a Stripe payment. All steps persist to the database and are visible in the UI without a page reload.
+A Filipino worker visits the site, compares two remittance listings, shares their referral link with a friend who signs up, clicks through to a provider — and that lead is recorded and visible in the admin dashboard. One provider completes a Stripe payment for a partnership slot. All of this works end-to-end in production.

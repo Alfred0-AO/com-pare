@@ -1,21 +1,21 @@
 # Security — com-pare
 
-## Secret Handling
-- `STRIPE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — server-side only, in Vercel env vars, never shipped to the browser.
-- Client uses only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- Stripe session creation happens exclusively in a Next.js API route (`/api/checkout`), never in client code.
+## Secrets
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — server-side env vars only, never in client bundles or logs.
+- Stripe session created exclusively in Next.js API route (`/api/checkout`), never from the browser.
 
 ## Permission Model
-- **v1 (demo):** Permissive RLS policies — any visitor can read and write. Safe because no PII or payment data is stored client-side.
-- **Lock-down sprint:** Replace all `using (true)` policies with `auth.uid() = user_id`. Comparisons and referrals become owner-scoped.
-- **Admin views:** Protected by Supabase service role on server routes; no admin UI exposed to anonymous users.
+- **Anonymous visitor:** read published listings, create comparison, create lead (demo-first).
+- **Authenticated user:** all of above + own profile, own referrals, own comparisons.
+- **Provider:** manage their own listings and view their own leads.
+- **Admin:** full read on all tables; can publish/unpublish providers.
+- v1 RLS policies are permissive. Lock-down sprint scopes every write to `auth.uid() = user_id`.
 
 ## Approved-Tools Rule
-- Only named tools listed in `AGENTIC_LAYER.md` may be called by automated logic.
-- No `eval`, no dynamic SQL construction from user input, no `run_any` / `send_any` patterns.
-- Stripe webhook endpoint validates `stripe-signature` header before acting.
+Agents may only call the named tools listed in AGENTIC_LAYER.md. No raw SQL execution, no `send_any`, no `run_any`. Every tool call is logged to `audit_logs`.
 
 ## Audit Principle
-- Every state change to `partnership_leads`, `checkout_sessions`, `referrals`, and `service_providers` writes an `audit_logs` row.
-- Audit rows are append-only (no update/delete RLS policy on `audit_logs`).
-- If a payment action is genuinely beyond the builder's expertise, stop and engage a payments specialist before going live.
+Every state-changing action (lead created, payment confirmed, tier upgraded, listing published) writes a row to `audit_logs` with actor, tool, inputs, outputs, and timestamp. Logs are append-only; no delete policy on that table.
+
+## Payments Safety
+Stripe webhooks validated with `stripe.webhooks.constructEvent` before any DB write. Provider tier is only upgraded after `payment_intent.succeeded` or `checkout.session.completed` is verified.

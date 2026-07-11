@@ -1,6 +1,6 @@
 # com-pare
 
-com-pare is a Filipino worker comparison and referral app in Singapore that connects Phil workers to remittance centres and service providers, tracking usage, referrals, and partnership commissions.
+com-pare is a comparison and referral platform for Filipino workers in Singapore that matches users with remittance and service providers, earns commission by connecting verified leads to paying partners.
 
 ## ⚠️ READ THIS BEFORE WRITING ANY CODE
 A complete, correct plan for this app is already committed in `/docs`. Do **not** start

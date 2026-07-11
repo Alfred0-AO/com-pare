@@ -1,71 +1,58 @@
 # Data Model — com-pare
 
 ## users
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | gen_random_uuid() |
-| user_id | uuid | nullable, Supabase auth link |
-| display_name | text | |
-| email | text | unique |
-| referral_code | text | unique, generated on signup |
-| referred_by_code | text | nullable |
-| created_at | timestamptz | default now() |
+| field | type |
+|---|---|
+| id | uuid PK |
+| user_id | uuid nullable |
+| full_name | text |
+| phone | text |
+| referral_code | text unique |
+| referred_by | uuid → users.id nullable |
+| referral_count | int default 0 |
+| created_at | timestamptz |
 
-## service_providers
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid | nullable |
-| name | text | e.g. "Western Union Orchard" |
-| category | text | remittance / telco / insurance |
-| fee_pct | numeric | |
-| speed_hours | numeric | typical transfer time |
-| rating | numeric | 1–5 |
-| website_url | text | |
-| is_partner | boolean | paid partner flag |
-| created_at | timestamptz | |
+## providers
+| field | type |
+|---|---|
+| id | uuid PK |
+| user_id | uuid nullable |
+| business_name | text |
+| category | text | *(remittance, insurance, telecom, loans)*
+| contact_email | text |
+| partnership_tier | text default 'free' |
+| payout_rate | numeric | *commission % per lead*
+| is_active | bool default true |
+| created_at | timestamptz |
+
+## listings
+| field | type |
+|---|---|
+| id | uuid PK |
+| user_id | uuid nullable |
+| provider_id | uuid → providers.id |
+| title | text |
+| exchange_rate | numeric |
+| fee_sgd | numeric |
+| promo_text | text |
+| value_score | numeric | *(AI)*
+| value_score_source | text |
+| value_score_confidence | numeric |
+| value_score_review_status | text default 'unreviewed' |
+| is_published | bool default true |
+| created_at | timestamptz |
 
 ## comparisons
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid | nullable |
-| amount_sgd | numeric | |
-| destination_country | text | |
-| results_snapshot | jsonb | ranked providers at time of search |
-| created_at | timestamptz | |
+| id, user_id, listing_ids jsonb, created_at |
 
 ## referrals
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid | nullable (referrer's users.id) |
-| referee_user_id | uuid | nullable (new user's users.id) |
-| referral_code | text | |
-| status | text | pending / confirmed |
-| created_at | timestamptz | |
+| id, user_id (referrer), referred_user_id, referral_code, status (pending/converted), created_at |
 
-## partnership_leads
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid | nullable |
-| provider_name | text | |
-| contact_email | text | |
-| message | text | |
-| status | text | new / contacted / converted |
-| created_at | timestamptz | |
+## leads
+| id, user_id, provider_id, listing_id, action (click/inquiry), created_at |
 
-## checkout_sessions
-| field | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| user_id | uuid | nullable |
-| partnership_lead_id | uuid | FK to partnership_leads |
-| stripe_session_id | text | |
-| amount_sgd | numeric | |
-| status | text | pending / paid / failed |
-| created_at | timestamptz | |
+## payments
+| id, user_id, provider_id, stripe_session_id, amount_sgd, status, created_at |
 
 ## RLS
-All tables: `enable row level security`. v1 permissive read+write policies for demo. Lock-down sprint replaces with `auth.uid() = user_id` owner policies.
+All tables: v1 permissive read+write (open for demo). Lock-down sprint replaces with `auth.uid() = user_id`.
